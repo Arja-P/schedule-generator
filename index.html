@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X and Y Daily Schedule Generator</title>
+    <style>
+        /* Custom font loading */
+        @font-face {
+            font-family: 'Gotham';
+            src: url('./fonts/Gotham-Bold.woff2') format('woff2'),
+                 url('./fonts/Gotham-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Gotham';
+            src: url('./fonts/Gotham-Medium.woff2') format('woff2'),
+                 url('./fonts/Gotham-Medium.woff') format('woff');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Gotham';
+            src: url('./fonts/Gotham-Regular.woff2') format('woff2'),
+                 url('./fonts/Gotham-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            font-family: 'Gotham', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 28px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            margin-right: 20px;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="date"] {
+            font-family: inherit;
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #generate-btn {
+            background-color: #3f51b5;
+            color: white;
+        }
+        #generate-btn:hover {
+            background-color: #303f9f;
+        }
+        #reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        #reset-btn:hover {
+            background-color: #d32f2f;
+        }
+        .preview-container {
+            margin-top: 30px;
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .preview-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #schedule-preview {
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        .download-row {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #download-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+        #download-btn:hover {
+            background-color: #388e3c;
+        }
+        .custom-topic-container {
+            display: none;
+            margin-top: 10px;
+        }
+        #topic-type-select {
+            margin-bottom: 10px;
+        }
+        #custom-topic-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .template-upload {
+            margin-bottom: 20px;
+        }
+        .template-preview {
+            max-width: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .predefined-templates {
+            display: none;
+            margin-top: 10px;
+        }
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .template-option {
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        .template-option:hover {
+            border-color: #3f51b5;
+        }
+        .template-option.selected {
+            border-color: #3f51b5;
+            background-color: #e8eaf6;
+        }
+        .template-option img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .template-option span {
+            display: block;
+            text-align: center;
+            padding: 5px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZGQ3NyIgLz48cGF0aCBkPSJNMzAgMzBMNzAgNzAiIHN0cm9rZT0iI2ZmNDQ1NSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNzAgMzBMMzAgNzAiIHN0cm9rZT0iI2ZmNDQ1NSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=" alt="X and Y Learning" class="logo">
+            <h1>Daily Schedule Generator</h1>
+        </div>
+
+        <!-- Template Selection Section -->
+        <div class="form-row template-upload">
+            <div class="form-group">
+                <label for="template-select">Template Mode</label>
+                <select id="template-select">
+                    <option value="default">Use Default Template</option>
+                    <option value="predefined">Choose from Predefined Templates</option>
+                    <option value="custom">Upload Custom Template</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Predefined Templates Grid -->
+        <div class="predefined-templates" id="predefined-templates">
+            <label>Select a Template:</label>
+            <div class="template-grid" id="template-grid">
+                <!-- Templates will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Custom Template Upload -->
+        <div class="form-row template-upload">
+            <div class="form-group" id="template-upload-container" style="display: none;">
+                <label for="template-upload">Upload Template Image</label>
+                <input type="file" id="template-upload" accept="image/*">
+                <img id="template-preview" class="template-preview" style="display: none;">
+            </div>
+        </div>
+
+        <form id="schedule-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="class-select">Class</label>
+                    <select id="class-select" required>
+                        <option value="">Select Class</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="board-select">Board</label>
+                    <select id="board-select" required>
+                        <option value="">Select Board</option>
+                        <option value="State">State</option>
+                        <option value="CBSE">CBSE</option>
+                        <option value="GCC">GCC</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="subject-select">Subject</label>
+                    <select id="subject-select" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="chapter-input">Chapter Name</label>
+                    <input type="text" id="chapter-input" placeholder="Enter chapter name" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="topic-select">Topic</label>
+                    <select id="topic-select" required>
+                        <option value="CUSTOM">Custom Topic</option>
+                        <option value="LIVE CLASS">LIVE CLASS</option>
+                        <option value="WORKBOOK DAY">WORKBOOK DAY</option>
+                        <option value="LIVE CLASS & WORK BOOK DAY">LIVE CLASS & WORK BOOK DAY</option>
+                        <option value="EXAM">EXAM</option>
+                    </select>
+                    <div class="custom-topic-container" id="custom-topic-container">
+                        <input type="text" id="custom-topic-input" placeholder="Enter custom topic">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="date-input">Date</label>
+                    <input type="date" id="date-input" required>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button type="button" id="generate-btn">Generate Schedule</button>
+                <button type="button" id="reset-btn">Reset Form</button>
+            </div>
+        </form>
+
+        <div class="preview-container" id="preview-container">
+            <h2 class="preview-title">Preview</h2>
+            <canvas id="schedule-preview"></canvas>
+            <div class="download-row">
+                <button type="button" id="download-btn">Download Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            document.getElementById('date-input').value = dateString;
+            
+            // Initialize elements
+            const classSelect = document.getElementById('class-select');
+            const subjectSelect = document.getElementById('subject-select');
+            const topicSelect = document.getElementById('topic-select');
+            const customTopicContainer = document.getElementById('custom-topic-container');
+            const customTopicInput = document.getElementById('custom-topic-input');
+            const generateBtn = document.getElementById('generate-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const previewContainer = document.getElementById('preview-container');
+            const schedulePreview = document.getElementById('schedule-preview');
+            const downloadBtn = document.getElementById('download-btn');
+            const templateSelect = document.getElementById('template-select');
+            const templateUploadContainer = document.getElementById('template-upload-container');
+            const templateUpload = document.getElementById('template-upload');
+            const templatePreview = document.getElementById('template-preview');
+            const predefinedTemplates = document.getElementById('predefined-templates');
+            const templateGrid = document.getElementById('template-grid');
+            
+            // Predefined templates from GitHub repository
+            const predefinedTemplatesList = [
+                { name: 'Template 1', path: './templates/template1.png' },
+                { name: 'Template 2', path: './templates/template2.png' },
+                { name: 'Template 3', path: './templates/template3.png' },
+                { name: 'Template 4', path: './templates/template4.png' }
+            ];
+            
+            // Default template image (fallback)
+            const defaultTemplateBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDgAAAQ4CAIAAABvFdhdAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gUQEQAOw1TJYwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAc1UlEQVR42uzXMQ0AIBAEsIuLgn8xGJh2N19IW9g1MwsAAHiuEgEAACgqAACgqAAAgKICAAB+VYkAAACeczyuEOh/2o0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDUtMTZUMTU6MDA6MTQrMDI6MDAEVXWRAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTA1LTE2VDE1OjAwOjE0KzAyOjAwdQjNLQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAANSURBVHja7cEBAQAAAICQ/q/uCAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYPcbgAAXCvGqEAAAAASUVORK5CYII=';
+            
+            // Create Image object for the default template
+            const defaultTemplateImg = new Image();
+            defaultTemplateImg.src = defaultTemplateBase64;
+            
+            let selectedTemplateImg = defaultTemplateImg;
+            let customTemplateImg = null;
+            
+            // Subject mapping by class
+            const subjectsByClass = {
+                '06': ['Math', 'Science I', 'Science II', 'Science III'],
+                '07': ['Math', 'Science I', 'Science II', 'Science III'],
+                '08': ['Math', 'Physics', 'Chemistry', 'Biology', 'Social', 'Hindi'],
+                '09': ['Math', 'Physics', 'Chemistry', 'Biology', 'Social', 'Hindi'],
+                '10': ['Math', 'Physics', 'Chemistry', 'Biology', 'Social', 'Hindi']
+            };
+
+            // Load predefined templates
+            function loadPredefinedTemplates() {
+                templateGrid.innerHTML = '';
+                predefinedTemplatesList.forEach((template, index) => {
+                    const templateOption = document.createElement('div');
+                    templateOption.className = 'template-option';
+                    templateOption.innerHTML = `
+                        <img src="${template.path}" alt="${template.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
+                        <span>${template.name}</span>
+                    `;
+                    
+                    templateOption.addEventListener('click', function() {
+                        // Remove previous selection
+                        document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
+                        // Add selection to clicked template
+                        this.classList.add('selected');
+                        
+                        // Load the selected template
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = function() {
+                            selectedTemplateImg = img;
+                        };
+                        img.onerror = function() {
+                            selectedTemplateImg = defaultTemplateImg;
+                        };
+                        img.src = template.path;
+                    });
+                    
+                    templateGrid.appendChild(templateOption);
+                });
+            }
+
+            // Update subjects when class changes
+            classSelect.addEventListener('change', updateSubjects);
+
+            function updateSubjects() {
+                const selectedClass = classSelect.value;
+                subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                
+                if (selectedClass && subjectsByClass[selectedClass]) {
+                    subjectsByClass[selectedClass].forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject;
+                        option.textContent = subject;
+                        subjectSelect.appendChild(option);
+                    });
+                }
+            }
+
+            // Toggle custom topic input based on topic selection
+            topicSelect.addEventListener('change', function() {
+                if (this.value === 'CUSTOM') {
+                    customTopicContainer.style.display = 'block';
+                    customTopicInput.required = true;
+                } else {
+                    customTopicContainer.style.display = 'none';
+                    customTopicInput.required = false;
+                }
+            });
+            
+            // Toggle template options based on template selection
+            templateSelect.addEventListener('change', function() {
+                if (this.value === 'predefined') {
+                    predefinedTemplates.style.display = 'block';
+                    templateUploadContainer.style.display = 'none';
+                    loadPredefinedTemplates();
+                } else if (this.value === 'custom') {
+                    predefinedTemplates.style.display = 'none';
+                    templateUploadContainer.style.display = 'block';
+                } else {
+                    predefinedTemplates.style.display = 'none';
+                    templateUploadContainer.style.display = 'none';
+                    selectedTemplateImg = defaultTemplateImg;
+                }
+            });
+            
+            // Handle template image upload
+            templateUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        customTemplateImg = new Image();
+                        customTemplateImg.onload = function() {
+                            templatePreview.src = event.target.result;
+                            templatePreview.style.display = 'block';
+                            selectedTemplateImg = customTemplateImg;
+                        };
+                        customTemplateImg.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Set custom topic as default
+            topicSelect.value = 'CUSTOM';
+            customTopicContainer.style.display = 'block';
+            customTopicInput.required = true;
+
+            // Reset form
+            resetBtn.addEventListener('click', function() {
+                document.getElementById('schedule-form').reset();
+                document.getElementById('date-input').value = dateString;
+                updateSubjects();
+                previewContainer.style.display = 'none';
+                topicSelect.value = 'CUSTOM';
+                customTopicContainer.style.display = 'block';
+                templateSelect.value = 'default';
+                predefinedTemplates.style.display = 'none';
+                templateUploadContainer.style.display = 'none';
+                templatePreview.style.display = 'none';
+                selectedTemplateImg = defaultTemplateImg;
+                document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
+            });
+
+            // Generate schedule preview
+            generateBtn.addEventListener('click', function() {
+                const form = document.getElementById('schedule-form');
+                
+                // Basic form validation
+                if (!form.checkValidity()) {
+                    alert('Please fill all required fields!');
+                    return;
+                }
+                
+                if (topicSelect.value === 'CUSTOM' && !customTopicInput.value.trim()) {
+                    alert('Please enter a custom topic!');
+                    return;
+                }
+                
+                generateScheduleImage();
+                previewContainer.style.display = 'block';
+                scrollToElement(previewContainer);
+            });
+
+            // Create and render the schedule image
+            function generateScheduleImage() {
+                const canvas = document.getElementById('schedule-preview');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                canvas.width = 1080;
+                canvas.height = 1080;
+                
+                // Get form values
+                const selectedClass = document.getElementById('class-select').value;
+                const selectedBoard = document.getElementById('board-select').value;
+                const selectedSubject = document.getElementById('subject-select').value;
+                const chapterName = document.getElementById('chapter-input').value.toUpperCase();
+                const topicType = document.getElementById('topic-select').value;
+                const customTopic = document.getElementById('custom-topic-input').value;
+                
+                // Format date
+                const dateInput = document.getElementById('date-input').value;
+                const dateObj = new Date(dateInput);
+                const formattedDate = dateObj.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).toUpperCase();
+                
+                // Course batch text
+                const courseBatchText = `${selectedBoard} ${selectedClass}`;
+                
+                // Topic text
+                const topicText = topicType === 'CUSTOM' ? customTopic : topicType;
+                
+                // Draw template image first
+                ctx.drawImage(selectedTemplateImg, 0, 0, canvas.width, canvas.height);
+                
+                // Now add text overlays with Gotham font
+                
+                // Draw batch text
+                ctx.font = 'bold 40px Gotham, Arial, sans-serif';
+                ctx.fillStyle = '#3F51B5';
+                ctx.textAlign = 'right';
+                ctx.fillText(courseBatchText, 980, 110);
+                
+                // Draw date
+                ctx.font = 'bold 34px Gotham, Arial, sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.fillText(formattedDate, 540, 428);
+                
+                // Draw subject
+                ctx.font = 'bold 34px Gotham, Arial, sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.fillText(selectedSubject, 270, 625);
+                
+                // Draw chapter
+                ctx.font = 'bold 46px Gotham, Arial, sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                wrapText(ctx, chapterName, 540, 695, 700, 60);
+                
+                // Draw topic
+                ctx.font = 'bold 42px Gotham, Arial, sans-serif';
+                ctx.fillStyle = '#FFD54F';
+                ctx.textAlign = 'center';
+                wrapText(ctx, topicText, 540, 845, 700, 50);
+            }
+
+            function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+                const words = text.split(' ');
+                let line = '';
+                let testLine = '';
+                let lineCount = 0;
+                
+                for(let n = 0; n < words.length; n++) {
+                    testLine = line + words[n] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    const testWidth = metrics.width;
+                    
+                    if (testWidth > maxWidth && n > 0) {
+                        ctx.fillText(line, x, y);
+                        line = words[n] + ' ';
+                        y += lineHeight;
+                        lineCount++;
+                    }
+                    else {
+                        line = testLine;
+                    }
+                }
+                
+                ctx.fillText(line, x, y);
+                return lineCount;
+            }
+
+            // Download functionality
+            downloadBtn.addEventListener('click', function() {
+                const canvas = document.getElementById('schedule-preview');
+                const selectedClass = document.getElementById('class-select').value;
+                const selectedSubject = document.getElementById('subject-select').value;
+                const dateInput = document.getElementById('date-input').value;
+                const dateObj = new Date(dateInput);
+                const formattedDateFilename = dateObj.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).replace(/\//g, '-');
+                
+                const link = document.createElement('a');
+                link.download = `XandY_${selectedClass}_${selectedSubject}_${formattedDateFilename}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+
+            function scrollToElement(element) {
+                window.scrollTo({
+                    top: element.offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
+</body>
+</html>
