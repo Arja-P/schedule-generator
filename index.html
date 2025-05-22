@@ -378,6 +378,93 @@
                 scrollToElement(previewContainer);
             });
 
+            // Function to calculate optimal font size for given text and constraints
+            function getOptimalFontSize(ctx, text, maxWidth, maxHeight, minFontSize = 20, maxFontSize = 80) {
+                let fontSize = maxFontSize;
+                
+                while (fontSize >= minFontSize) {
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    const metrics = ctx.measureText(text);
+                    const textWidth = metrics.width;
+                    
+                    // Estimate text height (rough approximation)
+                    const textHeight = fontSize * 1.2;
+                    
+                    if (textWidth <= maxWidth && textHeight <= maxHeight) {
+                        return fontSize;
+                    }
+                    
+                    fontSize -= 2;
+                }
+                
+                return minFontSize;
+            }
+
+            // Function to calculate optimal font size for multi-line text
+            function getOptimalFontSizeForMultiLine(ctx, text, maxWidth, maxHeight, minFontSize = 20, maxFontSize = 60) {
+                let fontSize = maxFontSize;
+                
+                while (fontSize >= minFontSize) {
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    const lineHeight = fontSize * 1.2;
+                    
+                    // Calculate how many lines we need
+                    const words = text.split(' ');
+                    let lines = 1;
+                    let currentLineWidth = 0;
+                    
+                    for (let word of words) {
+                        const wordWidth = ctx.measureText(word + ' ').width;
+                        
+                        if (currentLineWidth + wordWidth > maxWidth) {
+                            lines++;
+                            currentLineWidth = wordWidth;
+                        } else {
+                            currentLineWidth += wordWidth;
+                        }
+                    }
+                    
+                    const totalHeight = lines * lineHeight;
+                    
+                    if (totalHeight <= maxHeight) {
+                        return fontSize;
+                    }
+                    
+                    fontSize -= 2;
+                }
+                
+                return minFontSize;
+            }
+
+            // Enhanced wrapText function with adaptive font size
+            function wrapTextWithAdaptiveSize(ctx, text, x, y, maxWidth, maxHeight, initialFontSize = 50) {
+                // Calculate optimal font size
+                const optimalFontSize = getOptimalFontSizeForMultiLine(ctx, text, maxWidth, maxHeight, 20, initialFontSize);
+                ctx.font = `bold ${optimalFontSize}px Arial`;
+                
+                const lineHeight = optimalFontSize * 1.2;
+                const words = text.split(' ');
+                let line = '';
+                let currentY = y;
+                
+                for(let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    const testWidth = metrics.width;
+                    
+                    if (testWidth > maxWidth && n > 0) {
+                        ctx.fillText(line.trim(), x, currentY);
+                        line = words[n] + ' ';
+                        currentY += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                
+                ctx.fillText(line.trim(), x, currentY);
+                return optimalFontSize;
+            }
+
             // Create and render the schedule image
             function generateScheduleImage() {
                 const canvas = document.getElementById('schedule-preview');
@@ -420,60 +507,32 @@
                 // These positions need to be adjusted based on your actual template
                 
                 // Draw batch text
-                ctx.font = 'bold 50px Arial';
+                ctx.font = 'bold 60px Arial';
                 ctx.fillStyle = '#3F51B5';
                 ctx.textAlign = 'right';
-                ctx.fillText(courseBatchText, 765, 185);
+                ctx.fillText(courseBatchText, 900, 225);
                 
                 // Draw date
-                ctx.font = 'bold 34px Arial';
+                ctx.font = 'bold 50px Arial';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                ctx.fillText(formattedDate, 452, 414); // Adjust Y position to match your template
+                ctx.fillText(formattedDate, 575, 450);
                 
-                // Draw subject
-                ctx.font = 'bold 44px Arial';
+                // Draw subject (fixed font size)
+                ctx.font = 'bold 40px Arial';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                ctx.fillText(selectedSubject, 150, 612); // Adjust Y position to match your template
+                ctx.fillText(selectedSubject, 245, 645);
                 
-                // Draw chapter
-                ctx.font = 'bold 46px Arial';
+                // Draw chapter with adaptive font size and word wrapping (always capitalized)
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                wrapText(ctx, chapterName, 144, 695, 770, 85); // Adjust Y position to match your template
+                wrapTextWithAdaptiveSize(ctx, chapterName.toUpperCase(), 550, 720, 670, 120, 55);
                 
-                // Draw topic
-                ctx.font = 'bold 42px Arial';
+                // Draw topic with adaptive font size and word wrapping (always capitalized)
                 ctx.fillStyle = '#FFD54F';
                 ctx.textAlign = 'center';
-                wrapText(ctx, topicText, 144, 826, 770, 85); // Adjust Y position to match your template
-            }
-
-            function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-                const words = text.split(' ');
-                let line = '';
-                let testLine = '';
-                let lineCount = 0;
-                
-                for(let n = 0; n < words.length; n++) {
-                    testLine = line + words[n] + ' ';
-                    const metrics = ctx.measureText(testLine);
-                    const testWidth = metrics.width;
-                    
-                    if (testWidth > maxWidth && n > 0) {
-                        ctx.fillText(line, x, y);
-                        line = words[n] + ' ';
-                        y += lineHeight;
-                        lineCount++;
-                    }
-                    else {
-                        line = testLine;
-                    }
-                }
-                
-                ctx.fillText(line, x, y);
-                return lineCount;
+                wrapTextWithAdaptiveSize(ctx, topicText.toUpperCase(), 550, 860, 670, 120, 40);
             }
 
             // Download functionality
