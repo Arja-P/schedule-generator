@@ -5,36 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X and Y Daily Schedule Generator</title>
     <style>
-        /* Custom font loading */
-        @font-face {
-            font-family: 'Gotham';
-            src: url('./fonts/Gotham-Bold.woff2') format('woff2'),
-                 url('./fonts/Gotham-Bold.woff') format('woff');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'Gotham';
-            src: url('./fonts/Gotham-Medium.woff2') format('woff2'),
-                 url('./fonts/Gotham-Medium.woff') format('woff');
-            font-weight: 500;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'Gotham';
-            src: url('./fonts/Gotham-Regular.woff2') format('woff2'),
-                 url('./fonts/Gotham-Regular.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
-
         body {
-            font-family: 'Gotham', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
             margin: 0;
             padding: 0;
@@ -168,43 +140,6 @@
             max-width: 300px;
             margin-top: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .predefined-templates {
-            display: none;
-            margin-top: 10px;
-        }
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .template-option {
-            border: 2px solid transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-        }
-        .template-option:hover {
-            border-color: #3f51b5;
-        }
-        .template-option.selected {
-            border-color: #3f51b5;
-            background-color: #e8eaf6;
-        }
-        .template-option img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .template-option span {
-            display: block;
-            text-align: center;
-            padding: 5px;
-            font-size: 12px;
-            font-weight: 500;
         }
     </style>
 </head>
@@ -215,28 +150,15 @@
             <h1>Daily Schedule Generator</h1>
         </div>
 
-        <!-- Template Selection Section -->
+        <!-- Template Upload Section -->
         <div class="form-row template-upload">
             <div class="form-group">
                 <label for="template-select">Template Mode</label>
                 <select id="template-select">
                     <option value="default">Use Default Template</option>
-                    <option value="predefined">Choose from Predefined Templates</option>
                     <option value="custom">Upload Custom Template</option>
                 </select>
             </div>
-        </div>
-
-        <!-- Predefined Templates Grid -->
-        <div class="predefined-templates" id="predefined-templates">
-            <label>Select a Template:</label>
-            <div class="template-grid" id="template-grid">
-                <!-- Templates will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Custom Template Upload -->
-        <div class="form-row template-upload">
             <div class="form-group" id="template-upload-container" style="display: none;">
                 <label for="template-upload">Upload Template Image</label>
                 <input type="file" id="template-upload" accept="image/*">
@@ -323,7 +245,7 @@
             const dateString = today.toISOString().split('T')[0];
             document.getElementById('date-input').value = dateString;
             
-            // Initialize elements
+            // Initialize subject options based on class selection
             const classSelect = document.getElementById('class-select');
             const subjectSelect = document.getElementById('subject-select');
             const topicSelect = document.getElementById('topic-select');
@@ -338,25 +260,15 @@
             const templateUploadContainer = document.getElementById('template-upload-container');
             const templateUpload = document.getElementById('template-upload');
             const templatePreview = document.getElementById('template-preview');
-            const predefinedTemplates = document.getElementById('predefined-templates');
-            const templateGrid = document.getElementById('template-grid');
             
-            // Predefined templates from GitHub repository
-            const predefinedTemplatesList = [
-                { name: 'Template 1', path: './templates/template1.png' },
-                { name: 'Template 2', path: './templates/template2.png' },
-                { name: 'Template 3', path: './templates/template3.png' },
-                { name: 'Template 4', path: './templates/template4.png' }
-            ];
-            
-            // Default template image (fallback)
+            // Default template image (base64 representation of your template)
+            // This is a placeholder for your actual template image
             const defaultTemplateBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDgAAAQ4CAIAAABvFdhdAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gUQEQAOw1TJYwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAc1UlEQVR42uzXMQ0AIBAEsIuLgn8xGJh2N19IW9g1MwsAAHiuEgEAACgqAACgqAAAgKICAAB+VYkAAACeczyuEOh/2o0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDUtMTZUMTU6MDA6MTQrMDI6MDAEVXWRAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTA1LTE2VDE1OjAwOjE0KzAyOjAwdQjNLQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAANSURBVHja7cEBAQAAAICQ/q/uCAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYPcbgAAXCvGqEAAAAASUVORK5CYII=';
             
             // Create Image object for the default template
             const defaultTemplateImg = new Image();
             defaultTemplateImg.src = defaultTemplateBase64;
             
-            let selectedTemplateImg = defaultTemplateImg;
             let customTemplateImg = null;
             
             // Subject mapping by class
@@ -367,39 +279,6 @@
                 '09': ['Math', 'Physics', 'Chemistry', 'Biology', 'Social', 'Hindi'],
                 '10': ['Math', 'Physics', 'Chemistry', 'Biology', 'Social', 'Hindi']
             };
-
-            // Load predefined templates
-            function loadPredefinedTemplates() {
-                templateGrid.innerHTML = '';
-                predefinedTemplatesList.forEach((template, index) => {
-                    const templateOption = document.createElement('div');
-                    templateOption.className = 'template-option';
-                    templateOption.innerHTML = `
-                        <img src="${template.path}" alt="${template.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
-                        <span>${template.name}</span>
-                    `;
-                    
-                    templateOption.addEventListener('click', function() {
-                        // Remove previous selection
-                        document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
-                        // Add selection to clicked template
-                        this.classList.add('selected');
-                        
-                        // Load the selected template
-                        const img = new Image();
-                        img.crossOrigin = 'anonymous';
-                        img.onload = function() {
-                            selectedTemplateImg = img;
-                        };
-                        img.onerror = function() {
-                            selectedTemplateImg = defaultTemplateImg;
-                        };
-                        img.src = template.path;
-                    });
-                    
-                    templateGrid.appendChild(templateOption);
-                });
-            }
 
             // Update subjects when class changes
             classSelect.addEventListener('change', updateSubjects);
@@ -429,19 +308,12 @@
                 }
             });
             
-            // Toggle template options based on template selection
+            // Toggle template upload based on template selection
             templateSelect.addEventListener('change', function() {
-                if (this.value === 'predefined') {
-                    predefinedTemplates.style.display = 'block';
-                    templateUploadContainer.style.display = 'none';
-                    loadPredefinedTemplates();
-                } else if (this.value === 'custom') {
-                    predefinedTemplates.style.display = 'none';
+                if (this.value === 'custom') {
                     templateUploadContainer.style.display = 'block';
                 } else {
-                    predefinedTemplates.style.display = 'none';
                     templateUploadContainer.style.display = 'none';
-                    selectedTemplateImg = defaultTemplateImg;
                 }
             });
             
@@ -455,7 +327,6 @@
                         customTemplateImg.onload = function() {
                             templatePreview.src = event.target.result;
                             templatePreview.style.display = 'block';
-                            selectedTemplateImg = customTemplateImg;
                         };
                         customTemplateImg.src = event.target.result;
                     };
@@ -477,11 +348,8 @@
                 topicSelect.value = 'CUSTOM';
                 customTopicContainer.style.display = 'block';
                 templateSelect.value = 'default';
-                predefinedTemplates.style.display = 'none';
                 templateUploadContainer.style.display = 'none';
                 templatePreview.style.display = 'none';
-                selectedTemplateImg = defaultTemplateImg;
-                document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
             });
 
             // Generate schedule preview
@@ -496,6 +364,12 @@
                 
                 if (topicSelect.value === 'CUSTOM' && !customTopicInput.value.trim()) {
                     alert('Please enter a custom topic!');
+                    return;
+                }
+                
+                // Check if custom template is selected but no file uploaded
+                if (templateSelect.value === 'custom' && !customTemplateImg) {
+                    alert('Please upload a template image or select the default template!');
                     return;
                 }
                 
@@ -536,40 +410,44 @@
                 // Topic text
                 const topicText = topicType === 'CUSTOM' ? customTopic : topicType;
                 
-                // Draw template image first
-                ctx.drawImage(selectedTemplateImg, 0, 0, canvas.width, canvas.height);
+                // Determine which template to use
+                const templateToUse = templateSelect.value === 'custom' ? customTemplateImg : defaultTemplateImg;
                 
-                // Now add text overlays with Gotham font
+                // Draw template image first
+                ctx.drawImage(templateToUse, 0, 0, canvas.width, canvas.height);
+                
+                // Now add text overlays to specific positions
+                // These positions need to be adjusted based on your actual template
                 
                 // Draw batch text
-                ctx.font = 'bold 40px Gotham, Arial, sans-serif';
+                ctx.font = 'bold 50px Arial';
                 ctx.fillStyle = '#3F51B5';
                 ctx.textAlign = 'right';
-                ctx.fillText(courseBatchText, 980, 110);
+                ctx.fillText(courseBatchText, 765, 185);
                 
                 // Draw date
-                ctx.font = 'bold 34px Gotham, Arial, sans-serif';
+                ctx.font = 'bold 34px Arial';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                ctx.fillText(formattedDate, 540, 428);
+                ctx.fillText(formattedDate, 452, 414); // Adjust Y position to match your template
                 
                 // Draw subject
-                ctx.font = 'bold 34px Gotham, Arial, sans-serif';
+                ctx.font = 'bold 44px Arial';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                ctx.fillText(selectedSubject, 270, 625);
+                ctx.fillText(selectedSubject, 150, 612); // Adjust Y position to match your template
                 
                 // Draw chapter
-                ctx.font = 'bold 46px Gotham, Arial, sans-serif';
+                ctx.font = 'bold 46px Arial';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.textAlign = 'center';
-                wrapText(ctx, chapterName, 540, 695, 700, 60);
+                wrapText(ctx, chapterName, 144, 695, 770, 85); // Adjust Y position to match your template
                 
                 // Draw topic
-                ctx.font = 'bold 42px Gotham, Arial, sans-serif';
+                ctx.font = 'bold 42px Arial';
                 ctx.fillStyle = '#FFD54F';
                 ctx.textAlign = 'center';
-                wrapText(ctx, topicText, 540, 845, 700, 50);
+                wrapText(ctx, topicText, 144, 826, 770, 85); // Adjust Y position to match your template
             }
 
             function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
